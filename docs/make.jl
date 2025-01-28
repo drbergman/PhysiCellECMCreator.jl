@@ -9,7 +9,7 @@ makedocs(;
     sitename="PhysiCellECMCreator.jl",
     format=Documenter.HTML(;
         canonical="https://drbergman.github.io/PhysiCellECMCreator.jl",
-        edit_link=main,
+        edit_link="main",
         assets=String[],
     ),
     pages=[
