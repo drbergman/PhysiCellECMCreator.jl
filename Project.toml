@@ -3,7 +3,21 @@ uuid = "515ed340-d2f8-4e13-b70e-c9ebab3e992f"
 authors = ["Daniel Bergman <danielrbergman@gmail.com> and contributors"]
 version = "0.0.1"
 
+[deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+LightXML = "9c8b4983-aa76-5018-a973-4c85ecc9e179"
+Optimization = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
+OptimizationOptimJL = "36348300-93cb-4f02-beb5-3c3902f8871e"
+Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
+
 [compat]
+CSV = "0.10.15"
+DataFrames = "1.7.0"
+LightXML = "0.9.1"
+Optimization = "4.1.0"
+OptimizationOptimJL = "0.4.1"
+Polynomials = "4.0.13"
 julia = "1.10"
 
 [extras]
