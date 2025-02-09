@@ -126,7 +126,7 @@ function parseEllipticalDiscPatch(patch, config_dict)
     df = initializeDataFrame(config_dict)
     e = parseEllipseParameters(patch)
 
-    in_disc = [positionRelativeToEllipse(e, x, y)==:inside for (x, y) in zip(df.x, df.y)]
+    in_disc = [insideEllipse(e, x, y) for (x, y) in zip(df.x, df.y)]
     n = sum(in_disc)
     density, orientation, anisotropy = parseECMFeatures(patch)
     df.ecm_density[in_disc] .= density
