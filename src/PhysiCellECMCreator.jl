@@ -19,6 +19,7 @@ Generate an initial condition ECM file from an XML file.
     - `y_min::Float64`: the minimum y-coordinate of the PhysiCell domain
     - `y_max::Float64`: the maximum y-coordinate of the PhysiCell domain
     - `dy::Float64`: the spacing in the y-direction of voxels in the PhysiCell domain
+    - `z0::Float64`: optional, the z-coordinate of the PhysiCell domain (default: 0.0)
 """
 function generateICECM(path_to_ic_ecm_xml::String, path_to_ic_ecm_csv::String, config_dict::Dict{String,Float64})
     xml_doc = parse_file(path_to_ic_ecm_xml)
@@ -50,8 +51,9 @@ function initializeDataFrame(config_dict::Dict{String,Float64})
     end
     x = repeat(coords[1]; outer=length(coords[2]))
     y = repeat(coords[2]; inner=length(coords[1]))
+    z = "z" in keys(config_dict) ? config_dict["z0"] : 0.0
     n = length(x)
-    return DataFrame(x=x, y=y, ecm_density=zeros(Float64, n), ecm_orientation_x=zeros(Float64, n), ecm_orientation_y=zeros(Float64, n), is_missing=trues(n))
+    return DataFrame(x=x, y=y, z=z, ecm_density=zeros(Float64, n), ecm_orientation_x=zeros(Float64, n), ecm_orientation_y=zeros(Float64, n), is_missing=trues(n))
 end
 
 function parseLayer!(df::DataFrame, layer::XMLElement, config_dict::Dict{String,Float64})
