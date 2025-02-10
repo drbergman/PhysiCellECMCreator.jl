@@ -56,34 +56,40 @@ function initializeDataFrame(config_dict::Dict{String,Float64})
     return DataFrame(x=x, y=y, z=z, ecm_density=zeros(Float64, n), ecm_orientation_x=zeros(Float64, n), ecm_orientation_y=zeros(Float64, n), is_missing=trues(n))
 end
 
-function parseLayer!(df::DataFrame, layer::XMLElement, config_dict::Dict{String,Float64})
+function parseLayer!(df::AbstractDataFrame, layer::XMLElement, config_dict::Dict{String,Float64})
     layer_df = initializeDataFrame(config_dict)
-    for patch in child_elements(layer)
-        parsePatch!(layer_df, patch, config_dict)
+    for patch_collection in child_elements(layer)
+        parsePatchCollection!(layer_df, patch_collection, config_dict)
     end
     updateDataFrame!(df, layer_df; allow_overwrite=true)
 end
 
-function parsePatch!(layer_df::DataFrame, patch::XMLElement, config_dict::Dict{String,Float64})
-    patch_df = patchECM(patch, config_dict)
-    updateDataFrame!(layer_df, patch_df; allow_overwrite=false)
-end
-
-function patchECM(patch::XMLElement, config_dict::Dict{String,Float64})
-    patch_type = attribute(patch, "type")
+function parsePatchCollection!(layer_df::AbstractDataFrame, patch_collection::XMLElement, config_dict::Dict{String,Float64})
+    patch_type = attribute(patch_collection, "type")
     if patch_type == "everywhere"
-        return parseEverywherePatch(patch, config_dict)
+        patch_parser = parseEverywherePatch
     elseif patch_type == "ellipse"
-        return parseEllipsePatch(patch, config_dict)
+        patch_parser = parseEllipsePatch
     elseif patch_type == "elliptical_disc"
-        return parseEllipticalDiscPatch(patch, config_dict)
+        patch_parser = parseEllipticalDiscPatch
+    elseif patch_type == "ellipse_with_shell"
+        patch_parser = parseEllipseWithShellPatch
     else
         throw(ArgumentError("Patch type $patch_type not recognized."))
+    end
+    for patch in child_elements(patch_collection)
+        patch_df = patch_parser(patch, config_dict)
+        updateDataFrame!(layer_df, patch_df; allow_overwrite=false)
     end
 end
 
 function parseEverywherePatch(patch::XMLElement, config_dict::Dict{String,Float64})
     df = initializeDataFrame(config_dict)
+    parseEverywherePatch!(df, patch)
+    return df
+end
+
+function parseEverywherePatch!(df::AbstractDataFrame, patch::XMLElement)
     density, orientation, anisotropy = parseECMFeatures(patch)
     df.ecm_density .= density
     if orientation == "random"
@@ -94,14 +100,22 @@ function parseEverywherePatch(patch::XMLElement, config_dict::Dict{String,Float6
         throw(ArgumentError("Orientation $orientation not recognized for an everywhere ECM patch.\nRecognized orientations are: `random`"))
     end
     df.is_missing .= false
+end
+
+function parseEllipsePatch(patch::XMLElement, config_dict::Dict{String,Float64})
+    df = initializeDataFrame(config_dict)
+    parseEllipsePatch!(df, patch)
     return df
 end
 
-function parseEllipsePatch(patch, config_dict)
-    df = initializeDataFrame(config_dict)
+function parseEllipsePatch!(df::AbstractDataFrame, patch::XMLElement; check_coords::Bool=true)
     e = parseEllipseParameters(patch)
-        
-    in_ellipse = [positionRelativeToEllipse(e, x, y)==:thickness for (x, y) in zip(df.x, df.y)]
+
+    if check_coords
+        in_ellipse = [insideEllipseThickness(e, x, y) for (x, y) in zip(df.x, df.y)]
+    else
+        in_ellipse = trues(length(df.x))
+    end
     n = sum(in_ellipse)
     density, orientation, anisotropy = parseECMFeatures(patch)
     df.ecm_density[in_ellipse] .= density
@@ -121,14 +135,22 @@ function parseEllipsePatch(patch, config_dict)
         throw(ArgumentError("Orientation $orientation not recognized for an ellipse ECM patch.\nRecognized orientations are: `random`, `parallel`, `perpendicular`"))
     end
     df.is_missing[in_ellipse] .= false
+end
+
+function parseEllipticalDiscPatch(patch::XMLElement, config_dict::Dict{String,Float64})
+    df = initializeDataFrame(config_dict)
+    parseEllipticalDiscPatch!(df, patch)
     return df
 end
 
-function parseEllipticalDiscPatch(patch, config_dict)
-    df = initializeDataFrame(config_dict)
+function parseEllipticalDiscPatch!(df::AbstractDataFrame, patch::XMLElement; check_coords::Bool=true)
     e = parseEllipseParameters(patch)
 
-    in_disc = [insideEllipse(e, x, y) for (x, y) in zip(df.x, df.y)]
+    if check_coords
+        in_disc = [insideEllipse(e, x, y) for (x, y) in zip(df.x, df.y)]
+    else
+        in_disc = trues(length(df.x))
+    end
     n = sum(in_disc)
     density, orientation, anisotropy = parseECMFeatures(patch)
     df.ecm_density[in_disc] .= density
@@ -140,6 +162,54 @@ function parseEllipticalDiscPatch(patch, config_dict)
         throw(ArgumentError("Orientation $orientation not recognized for an elliptical disc ECM patch.\nRecognized orientations are: `random`"))
     end
     df.is_missing[in_disc] .= false
+end
+
+function parseEllipseWithShellPatch(patch::XMLElement, config_dict::Dict{String,Float64})
+    df = initializeDataFrame(config_dict)
+
+    e = parseEllipseParameters(patch)
+    positions = [positionRelativeToEllipse(e, x, y) for (x, y) in zip(df.x, df.y)]
+
+    interior_element = find_element(patch, "interior")
+    if isnothing(interior_element)
+        throw(ErrorException("An interior element must be specified for an ellipse with shell ECM patch.\nIf only setting the shell of the ellipse, use `ellipse` instead of `ellipse_with_shell`."))
+    end
+    for (tag, content_) in [("x0", e.center[1]), ("y0", e.center[2]), ("a", e.axes[1]), ("b", e.axes[2]), ("rotation", e.rotation)]
+        new_element = new_child(interior_element, tag)
+        set_content(new_element, string(content_))
+    end
+    interior_df = @view df[positions.==:inside, :]
+    parseEllipticalDiscPatch!(interior_df, interior_element; check_coords=false)
+
+    shell_element = find_element(patch, "shell")
+    if isnothing(shell_element)
+        throw(ErrorException("A shell element must be specified for an ellipse with shell ECM patch.\nIf only setting the interior of the ellipse, use `elliptical_disc` instead of `ellipse_with_shell`."))
+    end
+    for (tag, content_) in [("x0", e.center[1]), ("y0", e.center[2]), ("a", e.axes[1] + e.thickness), ("b", e.axes[2] + e.thickness), ("rotation", e.rotation), ("thickness", e.thickness)]
+        new_element = new_child(shell_element, tag)
+        set_content(new_element, string(content_))
+    end
+    shell_df = @view df[positions.==:thickness, :]
+    parseEllipsePatch!(shell_df, shell_element; check_coords=false)
+
+    exterior_element = find_element(patch, "exterior")
+    if isnothing(exterior_element)
+        return df
+    end
+
+    # optional exterior element defining ECM outside the ellipse with shell
+    in_exterior = positions.==:outside
+    n = sum(in_exterior)
+    density, orientation, anisotropy = parseECMFeatures(exterior_element)
+    df.ecm_density[in_exterior] .= density
+    if orientation == "random"
+        theta = 2 * pi * rand(n)
+        df.ecm_orientation_x[in_exterior] .= anisotropy * cos.(theta)
+        df.ecm_orientation_y[in_exterior] .= anisotropy * sin.(theta)
+    else
+        throw(ArgumentError("Orientation $orientation not recognized for the exterior an ellipse with shell ECM patch.\nRecognized orientations are: `random`"))
+    end
+    df.is_missing[in_exterior] .= false
     return df
 end
 
@@ -209,7 +279,7 @@ function parseECMFeatures(patch::XMLElement)
     return density, orientation, anisotropy
 end
 
-function updateDataFrame!(df::DataFrame, new_df::DataFrame; allow_overwrite::Bool=false)
+function updateDataFrame!(df::AbstractDataFrame, new_df::AbstractDataFrame; allow_overwrite::Bool=false)
     if !allow_overwrite
         @assert all(df.is_missing .| new_df.is_missing) "Overlapping patches are not allowed within the same layer.\nRemove the overlap or change the patch layers to indicate which one is on top (a higher layer)."
     end
@@ -316,56 +386,120 @@ end
 Create folder and create a template XML file for IC ECM.
 
 Create the whole path to `path_to_folder` and then create `ecm.xml` in that folder.
+The optional `monolayer` keyword argument will create a monolayer template instead of the default multilayer template.
+The monolayer template creates the ECM based on relative position to an ellipse with a shell around it.
 """
-function createICECMXMLTemplate(path_to_folder::String)
+function createICECMXMLTemplate(path_to_folder::String; monolayer::Bool=false)
+
     path_to_ic_ecm_xml = joinpath(path_to_folder, "ecm.xml")
     mkpath(dirname(path_to_ic_ecm_xml))
     xml_doc = XMLDocument()
     xml_root = create_root(xml_doc, "ic_ecm")
 
-    e_layer = new_child(xml_root, "layer")
-    set_attribute(e_layer, "ID", "1")
-
-    e_patch = new_child(e_layer, "patch")
-    set_attributes(e_patch, Dict("ID"=>"1", "type"=>"everywhere"))
-    for (name, value) in [("density", "0.4"), ("orientation", "random"), ("anisotropy", "0.3")]
-        e = new_child(e_patch, name)
-        set_content(e, value)
-    end
-
-    e_layer = new_child(xml_root, "layer")
-    set_attribute(e_layer, "ID", "2")
-
-    e_patch = new_child(e_layer, "patch")
-    set_attributes(e_patch, Dict("ID"=>"1", "type"=>"ellipse"))
-    for (name, value) in [("x0", "200.0"), ("y0", "-200.0"), ("a", "120.0"), ("b", "60.0"), ("rotation", "pi/8"), ("thickness", "50.0"), ("density", "0.5"), ("orientation", "parallel"), ("anisotropy", "0.8")]
-        e = new_child(e_patch, name)
-        set_content(e, value)
-    end
-
-    e_patch = new_child(e_layer, "patch")
-    set_attributes(e_patch, Dict("ID"=>"2", "type"=>"elliptical_disc"))
-    for (name, value) in [("x0", "200.0"), ("y0", "-200.0"), ("a", "120.0"), ("b", "60.0"), ("rotation", "pi/8"), ("density", "0.2"), ("orientation", "random"), ("anisotropy", "0.5")]
-        e = new_child(e_patch, name)
-        set_content(e, value)
-    end
-
-    e_patch = new_child(e_layer, "patch")
-    set_attributes(e_patch, Dict("ID"=>"3", "type"=>"ellipse"))
-    for (name, value) in [("x0", "-200.0"), ("y0", "200.0"), ("a", "200.0"), ("b", "40.0"), ("rotation", "-pi/2"), ("thickness", "100.0"), ("density", "0.8"), ("orientation", "perpendicular"), ("anisotropy", "1.0")]
-        e = new_child(e_patch, name)
-        set_content(e, value)
-    end
-
-    e_patch = new_child(e_layer, "patch")
-    set_attributes(e_patch, Dict("ID"=>"4", "type"=>"elliptical_disc"))
-    for (name, value) in [("x0", "-200.0"), ("y0", "200.0"), ("a", "200.0"), ("b", "40.0"), ("rotation", "-pi/2"), ("density", "0.6"), ("orientation", "random"), ("anisotropy", "0.7")]
-        e = new_child(e_patch, name)
-        set_content(e, value)
-    end
+    xml_root |> (monolayer ? createMonolayerXMLTemplate! : createMultilayerXMLTemplate)
 
     save_file(xml_doc, path_to_ic_ecm_xml)
     free(xml_doc)
 end
 
+function createMonolayerXMLTemplate!(xml_root::XMLElement)
+    e_layer = new_child(xml_root, "layer")
+    set_attribute(e_layer, "ID", "1")
+
+    e_ellipse_with_shell = new_child(e_layer, "patch_collection")
+    set_attribute(e_ellipse_with_shell, "type", "ellipse_with_shell")
+
+    e_patch = new_child(e_ellipse_with_shell, "patch")
+    set_attribute(e_patch, "ID", "1")
+
+    for (name, value) in [("x0", "0.0"), ("y0", "0.0"), ("a", "400.0"), ("b", "200.0"), ("rotation", "π/6"), ("thickness", "100.0")]
+        e = new_child(e_patch, name)
+        set_content(e, value)
+    end
+
+    for tag in ["interior", "shell", "exterior"]
+        e_location = new_child(e_patch, tag)
+        for (name, value) in [("density", "0.4"), ("orientation", tag == "shell" ? "perpendicular" : "random"), ("anisotropy", "0.3")]
+            e = new_child(e_location, name)
+            set_content(e, value)
+        end
+    end
+end
+
+function createMultilayerXMLTemplate(xml_root::XMLElement)
+    e_layer = new_child(xml_root, "layer")
+    set_attribute(e_layer, "ID", "1")
+
+    ## layer 1 everyhweres
+    e_everyhwere = new_child(e_layer, "patch_collection")
+    set_attribute(e_everyhwere, "type", "everywhere")
+
+    e_patch = new_child(e_everyhwere, "patch")
+    set_attributes(e_patch, Dict("ID" => "1"))
+    for (name, value) in [("density", "0.4"), ("orientation", "random"), ("anisotropy", "0.3")]
+        e = new_child(e_patch, name)
+        set_content(e, value)
+    end
+
+    # layer 2
+    e_layer = new_child(xml_root, "layer")
+    set_attribute(e_layer, "ID", "2")
+
+    ## layer 2 ellipses
+    e_ellipse = new_child(e_layer, "patch_collection")
+    set_attribute(e_ellipse, "type", "ellipse")
+
+    e_patch = new_child(e_ellipse, "patch")
+    set_attributes(e_patch, Dict("ID" => "1"))
+    for (name, value) in [("x0", "200.0"), ("y0", "-200.0"), ("a", "120.0"), ("b", "60.0"), ("rotation", "pi/8"), ("thickness", "50.0"), ("density", "0.5"), ("orientation", "parallel"), ("anisotropy", "0.8")]
+        e = new_child(e_patch, name)
+        set_content(e, value)
+    end
+
+    e_patch = new_child(e_ellipse, "patch")
+    set_attributes(e_patch, Dict("ID" => "2"))
+    for (name, value) in [("x0", "-200.0"), ("y0", "200.0"), ("a", "200.0"), ("b", "40.0"), ("rotation", "-pi/2"), ("thickness", "100.0"), ("density", "0.8"), ("orientation", "perpendicular"), ("anisotropy", "1.0")]
+        e = new_child(e_patch, name)
+        set_content(e, value)
+    end
+
+    ## layer 2 elliptical discs
+    e_elliptical_disc = new_child(e_layer, "patch_collection")
+    set_attribute(e_elliptical_disc, "type", "elliptical_disc")
+
+    e_patch = new_child(e_elliptical_disc, "patch")
+    set_attributes(e_patch, Dict("ID" => "1"))
+    for (name, value) in [("x0", "200.0"), ("y0", "-200.0"), ("a", "120.0"), ("b", "60.0"), ("rotation", "pi/8"), ("density", "0.2"), ("orientation", "random"), ("anisotropy", "0.5")]
+        e = new_child(e_patch, name)
+        set_content(e, value)
+    end
+
+    e_patch = new_child(e_elliptical_disc, "patch")
+    set_attributes(e_patch, Dict("ID" => "2"))
+    for (name, value) in [("x0", "-200.0"), ("y0", "200.0"), ("a", "200.0"), ("b", "40.0"), ("rotation", "-pi/2"), ("density", "0.6"), ("orientation", "random"), ("anisotropy", "0.7")]
+        e = new_child(e_patch, name)
+        set_content(e, value)
+    end
+
+    ## layer 2 ellipses with shell
+    e_ellipse_with_shell = new_child(e_layer, "patch_collection")
+    set_attribute(e_ellipse_with_shell, "type", "ellipse_with_shell")
+
+    e_patch = new_child(e_ellipse_with_shell, "patch")
+    set_attribute(e_patch, "ID", "1")
+    for (name, value) in [("x0", "350.0"), ("y0", "350.0"), ("a", "100.0"), ("b", "100.0"), ("rotation", "0.0"), ("thickness", "80.0")]
+        e = new_child(e_patch, name)
+        set_content(e, value)
+    end
+    e_interior = new_child(e_patch, "interior")
+    for (name, value) in [("density", "0.4"), ("orientation", "random"), ("anisotropy", "0.3")]
+        e = new_child(e_interior, name)
+        set_content(e, value)
+    end
+    e_shell = new_child(e_patch, "shell")
+    for (name, value) in [("density", "0.8"), ("orientation", "random"), ("anisotropy", "0.3")]
+        e = new_child(e_shell, name)
+        set_content(e, value)
+    end
+end
 end

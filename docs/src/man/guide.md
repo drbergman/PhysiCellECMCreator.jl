@@ -55,6 +55,11 @@ The `thickness` element can be set to a positive value to create a ring of ECM t
 ```
 
 The `rotation` element sets the counter-clockwise rotation of the ellipse.
+By default, `rotation` is assumed to be in degrees.
+If the content of the element includes "pi", then the units are assumed to be in radians.
+Furthermore, the units can be explicitly set with the `units` attribute (see below).
+So long as the attribute satisfies `startswith(units, "rad")`, the units will be assumed to be in radians.
+
 The `orientation` element can be set to `parallel`, `perpendicular`, or `random`.
 For `parallel`, the orientation will follow the shape of the ellipse.
 For `perpendicular`, the orientation will be perpendicular to the shape of the ellipse.
@@ -92,6 +97,40 @@ A sample `elliptical_disc` patch is shown below.
 </patch>
 ```
 
+### `ellipse_with_shell`
+The `ellipse_with_shell` type is used to set the ECM values on an ellipse with a shell, i.e. a combination of `ellipse` and `elliptical_disc`.
+The location of the ellipse is set exactly as the `ellipse` and `elliptical_disc` patches.
+However, the `density`, `orientation`, and `anisotropy` values are set for the `interior` and `shell` in separate child elements with those tags.
+The same orientation restrictions for `ellipse` apply to the `shell`.
+Similarly, `elliptical_disc` orientation restrictions apply to the `interior`.
+A sample `ellipse_with_shell` patch is shown below.
+```xml
+<patch ID="3" type="ellipse_with_shell">
+    <x0>150.0</x0>
+    <y0>200.0</y0>
+    <a>100.0</a>
+    <b>80.0</b>
+    <rotation units="rad">2pi/3</rotation>
+    <thickness units="px">100.0</thickness>
+    <interior>
+        <density>0.5</density>
+        <orientation>random</orientation>
+        <anisotropy>1.0</anisotropy>
+    </interior>
+    <shell>
+        <density>0.3</density>
+        <orientation>parallel</orientation>
+        <anisotropy>0.3</anisotropy>
+    </shell>
+</patch>
+```
+An additional `exterior` element can be added analagously to the `interior` and `shell` elements.
+This will define the ECM values outside the shell.
+The only `orientation` option is `random`.
+Caution: using the `exterior` option means the `ellipse_with_shell` patch is setting ECM values throughout the entire domain.
+Any previous layer will be overwritten.
+Any patches in the same layer will necessarily overlap, causing an error.
+
 ## Example XML
 
 A full example XML is shown below.
@@ -99,36 +138,62 @@ A full example XML is shown below.
 <?xml version="1.0"?>
 <ic_ecm>
     <layer ID="1">
-        <patch ID="1" type="everywhere">
-            <density>0.4</density>
-            <orientation>random</orientation>
-            <anisotropy>0.3</anisotropy>
-        </patch>
+        <patch_collection type="everywhere">
+            <patch ID="1">
+                <density>0.4</density>
+                <orientation>random</orientation>
+                <anisotropy>0.3</anisotropy>
+            </patch>
+        </patch_collection>
         ...
     </layer>
     ...
     <layer ID="3">
-        <patch ID="1" type="ellipse">
-            <density>0.5</density>
-            <orientation>parallel</orientation>
-            <anisotropy>1.0</anisotropy>
-            <x0>150.0</x0>
-            <y0>200.0</y0>
-            <a>100.0</a>
-            <b>80.0</b>
-            <rotation>2pi/3</rotation>
-            <thickness>100.0</thickness>
-        </patch>
-        <patch ID="2" type="elliptical_disc">
-            <density>0.3</density>
-            <orientation>random</orientation>
-            <anisotropy>0.3</anisotropy>
-            <x0>150.0</x0>
-            <y0>200.0</y0>
-            <a>100.0</a>
-            <b>80.0</b>
-            <rotation>2pi/3</rotation>
-        </patch>
+        <patch_collection type="ellipse">
+            <patch ID="1">
+                <density>0.5</density>
+                <orientation>parallel</orientation>
+                <anisotropy>1.0</anisotropy>
+                <x0>150.0</x0>
+                <y0>200.0</y0>
+                <a>100.0</a>
+                <b>80.0</b>
+                <rotation units="rad">2pi/3</rotation>
+                <thickness units="px">100.0</thickness>
+            </patch>
+        </patch_collection>
+        <patch_collection type="elliptical_disc">
+            <patch ID="1">
+                <density>0.3</density>
+                <orientation>random</orientation>
+                <anisotropy>0.3</anisotropy>
+                <x0>150.0</x0>
+                <y0>200.0</y0>
+                <a>100.0</a>
+                <b>80.0</b>
+                <rotation units="rad">2pi/3</rotation>
+            </patch>
+        </patch_collection>
+        <patch_collection type="ellipse_with_shell">
+            <patch ID="1">
+                <x0>150.0</x0>
+                <y0>200.0</y0>
+                <a>100.0</a>
+                <b>80.0</b>
+                <rotation units="rad">2pi/3</rotation>
+                <thickness units="px">100.0</thickness>
+                <interior>
+                    <density>0.5</density>
+                    <orientation>random</orientation>
+                    <anisotropy>1.0</anisotropy>
+                </interior>
+                <shell>
+                    <density>0.3</density>
+                    <orientation>parallel</orientation>
+                    <anisotropy>0.3</anisotropy>
+                </shell>
+            </patch>
+        </patch_collection>
         ...
     </layer>
 </ic_ecm>
