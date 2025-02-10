@@ -1,7 +1,7 @@
 name = "PhysiCellECMCreator"
 uuid = "515ed340-d2f8-4e13-b70e-c9ebab3e992f"
 authors = ["Daniel Bergman <danielrbergman@gmail.com> and contributors"]
-version = "0.0.2"
+version = "0.0.3"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
