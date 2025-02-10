@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Guide · PhysiCellECMCreator.jl</title><meta name="title" content="Guide · PhysiCellECMCreator.jl"/><meta property="og:title" content="Guide · PhysiCellECMCreator.jl"/><meta property="twitter:title" content="Guide · PhysiCellECMCreator.jl"/><meta name="description" content="Documentation for PhysiCellECMCreator.jl."/><meta property="og:description" content="Documentation for PhysiCellECMCreator.jl."/><meta property="twitter:description" content="Documentation for PhysiCellECMCreator.jl."/><meta property="og:url" content="https://drbergman.github.io/PhysiCellECMCreator.jl/man/guide/"/><meta property="twitter:url" content="https://drbergman.github.io/PhysiCellECMCreator.jl/man/guide/"/><link rel="canonical" href="https://drbergman.github.io/PhysiCellECMCreator.jl/man/guide/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PhysiCellECMCreator.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Manual</span><ul><li class="is-active"><a class="tocitem" href>Guide</a><ul class="internal"><li><a class="tocitem" href="#Layers"><span>Layers</span></a></li><li><a class="tocitem" href="#Patches"><span>Patches</span></a></li><li><a class="tocitem" href="#Example-XML"><span>Example XML</span></a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Manual</a></li><li class="is-active"><a href>Guide</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Guide</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/drbergman/PhysiCellECMCreator.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/drbergman/PhysiCellECMCreator.jl/blob/main/docs/src/man/guide.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Guide"><a class="docs-heading-anchor" href="#Guide">Guide</a><a id="Guide-1"></a><a class="docs-heading-anchor-permalink" href="#Guide" title="Permalink"></a></h1><p>You can create a simple XML by running</p><pre><code class="language-julia hljs">using PhysiCellECMCreator
+path_to_folder = &quot;template_folder&quot;
+createICECMXMLTemplate(path_to_folder) # will create ecm.xml inside the folder &quot;template_folder&quot;</code></pre><p>Then, you can edit the XML file as needed.</p><h2 id="Layers"><a class="docs-heading-anchor" href="#Layers">Layers</a><a id="Layers-1"></a><a class="docs-heading-anchor-permalink" href="#Layers" title="Permalink"></a></h2><p>The ECM is divided into layers. The layers decide precedence of ECM values in the voxels. The lower layers (lower <code>ID</code> values) are drawn first, and the higher layers are drawn on top, overwriting the lower layers. Within each layer, patches cannot overlap.</p><h2 id="Patches"><a class="docs-heading-anchor" href="#Patches">Patches</a><a id="Patches-1"></a><a class="docs-heading-anchor-permalink" href="#Patches" title="Permalink"></a></h2><p>Each layer can have multiple patches. The patches can be of different types, selected from <code>everywhere</code>, <code>ellipse</code>, and <code>elliptical_disc</code>. See <a href="#Example-XML">Example XML</a> for an example of each type.</p><h3 id="everywhere"><a class="docs-heading-anchor" href="#everywhere"><code>everywhere</code></a><a id="everywhere-1"></a><a class="docs-heading-anchor-permalink" href="#everywhere" title="Permalink"></a></h3><p>The <code>everywhere</code> type is used to set the ECM values for the entire domain. This is useful for the base layer, i.e., <code>ID=&quot;1&quot;</code>. You may set the <code>density</code>, <code>orientation</code>, and <code>anisotropy</code> for the entire domain. The only <code>orientation</code> option is <code>random</code>. A sample <code>everywhere</code> patch is shown below.</p><pre><code class="language-xml hljs">&lt;patch ID=&quot;1&quot; type=&quot;everywhere&quot;&gt;
+    &lt;density&gt;0.4&lt;/density&gt;
+    &lt;orientation&gt;random&lt;/orientation&gt;
+    &lt;anisotropy&gt;0.3&lt;/anisotropy&gt;
+&lt;/patch&gt;</code></pre><h3 id="ellipse"><a class="docs-heading-anchor" href="#ellipse"><code>ellipse</code></a><a id="ellipse-1"></a><a class="docs-heading-anchor-permalink" href="#ellipse" title="Permalink"></a></h3><p>The <code>ellipse</code> type is used to set the ECM values on an ellipse. The <code>x0</code> and <code>y0</code> elements set the center of the ellipse. The <code>a</code> and <code>b</code> elements set the axes in the x and y directions, respectively. Thus, the equation of the ellipse considering only these parameters is</p><p class="math-container">\[\begin{aligned}
+\frac{(x-x_0)^2}{a^2} + \frac{(y-y_0)^2}{b^2} = 1
+\end{aligned}\]</p><p>The <code>thickness</code> element can be set to a positive value to create a ring of ECM that begins at the ellipse and extends outwards to the ellipse defined by</p><p class="math-container">\[\begin{aligned}
+\frac{(x-x_0)^2}{(a+thickness)^2} + \frac{(y-y_0)^2}{(b+thickness)^2} = 1
+\end{aligned}\]</p><p>The <code>rotation</code> element sets the counter-clockwise rotation of the ellipse. By default, <code>rotation</code> is assumed to be in degrees. If the content of the element includes &quot;pi&quot;, then the units are assumed to be in radians. Furthermore, the units can be explicitly set with the <code>units</code> attribute (see below). So long as the attribute satisfies <code>startswith(units, &quot;rad&quot;)</code>, the units will be assumed to be in radians.</p><p>The <code>orientation</code> element can be set to <code>parallel</code>, <code>perpendicular</code>, or <code>random</code>. For <code>parallel</code>, the orientation will follow the shape of the ellipse. For <code>perpendicular</code>, the orientation will be perpendicular to the shape of the ellipse. A sample <code>ellipse</code> patch is shown below.</p><pre><code class="language-xml hljs">&lt;patch ID=&quot;1&quot; type=&quot;ellipse&quot;&gt;
+    &lt;density&gt;0.5&lt;/density&gt;
+    &lt;orientation&gt;parallel&lt;/orientation&gt;
+    &lt;anisotropy&gt;1.0&lt;/anisotropy&gt;
+    &lt;x0&gt;150.0&lt;/x0&gt;
+    &lt;y0&gt;200.0&lt;/y0&gt;
+    &lt;a&gt;100.0&lt;/a&gt;
+    &lt;b&gt;80.0&lt;/b&gt;
+    &lt;rotation units=&quot;rad&quot;&gt;2pi/3&lt;/rotation&gt;
+    &lt;thickness&gt;100.0&lt;/thickness&gt;
+&lt;/patch&gt;</code></pre><h3 id="elliptical_disc"><a class="docs-heading-anchor" href="#elliptical_disc"><code>elliptical_disc</code></a><a id="elliptical_disc-1"></a><a class="docs-heading-anchor-permalink" href="#elliptical_disc" title="Permalink"></a></h3><p>The <code>elliptical_disc</code> type is used to set the ECM values on an elliptical disc. It is often used in tandem with an <code>ellipse</code> patch to fill in the center of the ellipse. The same parameters as the <code>ellipse</code> patch are used, except the <code>thickness</code> parameter is not used. The only <code>orientation</code> option is <code>random</code>. A sample <code>elliptical_disc</code> patch is shown below.</p><pre><code class="language-xml hljs">&lt;patch ID=&quot;2&quot; type=&quot;elliptical_disc&quot;&gt;
+    &lt;density&gt;0.3&lt;/density&gt;
+    &lt;orientation&gt;random&lt;/orientation&gt;
+    &lt;anisotropy&gt;0.3&lt;/anisotropy&gt;
+    &lt;x0&gt;150.0&lt;/x0&gt;
+    &lt;y0&gt;200.0&lt;/y0&gt;
+    &lt;a&gt;100.0&lt;/a&gt;
+    &lt;b&gt;80.0&lt;/b&gt;
+    &lt;rotation units=&quot;rad&quot;&gt;2pi/3&lt;/rotation&gt;
+&lt;/patch&gt;</code></pre><h3 id="ellipse_with_shell"><a class="docs-heading-anchor" href="#ellipse_with_shell"><code>ellipse_with_shell</code></a><a id="ellipse_with_shell-1"></a><a class="docs-heading-anchor-permalink" href="#ellipse_with_shell" title="Permalink"></a></h3><p>The <code>ellipse_with_shell</code> type is used to set the ECM values on an ellipse with a shell, i.e. a combination of <code>ellipse</code> and <code>elliptical_disc</code>. The location of the ellipse is set exactly as the <code>ellipse</code> and <code>elliptical_disc</code> patches. However, the <code>density</code>, <code>orientation</code>, and <code>anisotropy</code> values are set for the <code>interior</code> and <code>shell</code> in separate child elements with those tags. The same orientation restrictions for <code>ellipse</code> apply to the <code>shell</code>. Similarly, <code>elliptical_disc</code> orientation restrictions apply to the <code>interior</code>. A sample <code>ellipse_with_shell</code> patch is shown below.</p><pre><code class="language-xml hljs">&lt;patch ID=&quot;3&quot; type=&quot;ellipse_with_shell&quot;&gt;
+    &lt;x0&gt;150.0&lt;/x0&gt;
+    &lt;y0&gt;200.0&lt;/y0&gt;
+    &lt;a&gt;100.0&lt;/a&gt;
+    &lt;b&gt;80.0&lt;/b&gt;
+    &lt;rotation units=&quot;rad&quot;&gt;2pi/3&lt;/rotation&gt;
+    &lt;thickness units=&quot;px&quot;&gt;100.0&lt;/thickness&gt;
+    &lt;interior&gt;
+        &lt;density&gt;0.5&lt;/density&gt;
+        &lt;orientation&gt;random&lt;/orientation&gt;
+        &lt;anisotropy&gt;1.0&lt;/anisotropy&gt;
+    &lt;/interior&gt;
+    &lt;shell&gt;
+        &lt;density&gt;0.3&lt;/density&gt;
+        &lt;orientation&gt;parallel&lt;/orientation&gt;
+        &lt;anisotropy&gt;0.3&lt;/anisotropy&gt;
+    &lt;/shell&gt;
+&lt;/patch&gt;</code></pre><p>An additional <code>exterior</code> element can be added analagously to the <code>interior</code> and <code>shell</code> elements. This will define the ECM values outside the shell. The only <code>orientation</code> option is <code>random</code>. Caution: using the <code>exterior</code> option means the <code>ellipse_with_shell</code> patch is setting ECM values throughout the entire domain. Any previous layer will be overwritten. Any patches in the same layer will necessarily overlap, causing an error.</p><h2 id="Example-XML"><a class="docs-heading-anchor" href="#Example-XML">Example XML</a><a id="Example-XML-1"></a><a class="docs-heading-anchor-permalink" href="#Example-XML" title="Permalink"></a></h2><p>A full example XML is shown below.</p><pre><code class="language-xml hljs">&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;ic_ecm&gt;
+    &lt;layer ID=&quot;1&quot;&gt;
+        &lt;patch_collection type=&quot;everywhere&quot;&gt;
+            &lt;patch ID=&quot;1&quot;&gt;
+                &lt;density&gt;0.4&lt;/density&gt;
+                &lt;orientation&gt;random&lt;/orientation&gt;
+                &lt;anisotropy&gt;0.3&lt;/anisotropy&gt;
+            &lt;/patch&gt;
+        &lt;/patch_collection&gt;
+        ...
+    &lt;/layer&gt;
+    ...
+    &lt;layer ID=&quot;3&quot;&gt;
+        &lt;patch_collection type=&quot;ellipse&quot;&gt;
+            &lt;patch ID=&quot;1&quot;&gt;
+                &lt;density&gt;0.5&lt;/density&gt;
+                &lt;orientation&gt;parallel&lt;/orientation&gt;
+                &lt;anisotropy&gt;1.0&lt;/anisotropy&gt;
+                &lt;x0&gt;150.0&lt;/x0&gt;
+                &lt;y0&gt;200.0&lt;/y0&gt;
+                &lt;a&gt;100.0&lt;/a&gt;
+                &lt;b&gt;80.0&lt;/b&gt;
+                &lt;rotation units=&quot;rad&quot;&gt;2pi/3&lt;/rotation&gt;
+                &lt;thickness units=&quot;px&quot;&gt;100.0&lt;/thickness&gt;
+            &lt;/patch&gt;
+        &lt;/patch_collection&gt;
+        &lt;patch_collection type=&quot;elliptical_disc&quot;&gt;
+            &lt;patch ID=&quot;1&quot;&gt;
+                &lt;density&gt;0.3&lt;/density&gt;
+                &lt;orientation&gt;random&lt;/orientation&gt;
+                &lt;anisotropy&gt;0.3&lt;/anisotropy&gt;
+                &lt;x0&gt;150.0&lt;/x0&gt;
+                &lt;y0&gt;200.0&lt;/y0&gt;
+                &lt;a&gt;100.0&lt;/a&gt;
+                &lt;b&gt;80.0&lt;/b&gt;
+                &lt;rotation units=&quot;rad&quot;&gt;2pi/3&lt;/rotation&gt;
+            &lt;/patch&gt;
+        &lt;/patch_collection&gt;
+        &lt;patch_collection type=&quot;ellipse_with_shell&quot;&gt;
+            &lt;patch ID=&quot;1&quot;&gt;
+                &lt;x0&gt;150.0&lt;/x0&gt;
+                &lt;y0&gt;200.0&lt;/y0&gt;
+                &lt;a&gt;100.0&lt;/a&gt;
+                &lt;b&gt;80.0&lt;/b&gt;
+                &lt;rotation units=&quot;rad&quot;&gt;2pi/3&lt;/rotation&gt;
+                &lt;thickness units=&quot;px&quot;&gt;100.0&lt;/thickness&gt;
+                &lt;interior&gt;
+                    &lt;density&gt;0.5&lt;/density&gt;
+                    &lt;orientation&gt;random&lt;/orientation&gt;
+                    &lt;anisotropy&gt;1.0&lt;/anisotropy&gt;
+                &lt;/interior&gt;
+                &lt;shell&gt;
+                    &lt;density&gt;0.3&lt;/density&gt;
+                    &lt;orientation&gt;parallel&lt;/orientation&gt;
+                    &lt;anisotropy&gt;0.3&lt;/anisotropy&gt;
+                &lt;/shell&gt;
+            &lt;/patch&gt;
+        &lt;/patch_collection&gt;
+        ...
+    &lt;/layer&gt;
+&lt;/ic_ecm&gt;</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« Home</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Monday 10 February 2025 20:24">Monday 10 February 2025</span>. Using Julia version 1.11.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
